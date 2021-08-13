@@ -5,28 +5,37 @@ declare(strict_types=1);
 use picasticks\Strava\Club;
 use picasticks\Strava\ClubTracker;
 
-require_once 'lib/vendor/autoload.php';
+require_once '/Users/gabrieltavares/Documents/GitHub/StravaClubTracker_guild/vendor/autoload.php';
 
 // Set a TZ for date calculations
-date_default_timezone_set('America/New_York');
+date_default_timezone_set('America/Sao_Paulo');
 
 $tracker = new ClubTracker(new Club(__DIR__.'/json'));
 
 // Set league sports and display rules
 
 // Uncomment to use km as distance unit instead of miles
-//$tracker->distanceUnit = array('KM' => 1000);
+$tracker->distanceUnit = array('KM' => 1000);
 
 // Define sports (activity types) to include, and total/counting rules
 $tracker->setSport('Ride', array('distanceMultiplier' => 0.25));
 $tracker->setSport('Run',  array('maxSpeed' => 15.0));
 $tracker->setSport('Walk', array('label' => 'Walk/Hike', 'maxSpeed' => 8.0));
 $tracker->setSport('Hike', array('convertTo' => 'Walk'));
+$tracker->setSport('Crossfit', array('convertTo' => 'Workout'));
+$tracker->setSport('WeightTraining', array('convertTo' => 'Workout'));
+$tracker->setSport('Workout');
+$tracker->setSport('Swim');
+$tracker->setSport('Yoga');
+$tracker->setSport('RockClimbing');
+$tracker->setSport('VirtualRide', array('convertTo' => 'Ride'));
+
+
 // Uncomment to add VirtualRun as "Treadmill" with a limit of 5 miles per activity
 //$tracker->setSport('VirtualRun', array('label' => 'Treadmill', 'distanceLimit' => 5.0));
 
 // Uncomment to permit manual activities w/o GPS data. Be sure to enable this for VirtualRun, VirtualRide.
-//$tracker->allowManual = true;
+$tracker->allowManual = true;
 
 // Example of whitelisting an activity ID, so that it is counted even if fails speed, duration sanity/data quality checks
 //$tracker->whitelistActivity('3f9aec4c0ca125a71347c1fbffc4743b25d48347');

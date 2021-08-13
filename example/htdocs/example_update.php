@@ -10,29 +10,25 @@ use picasticks\Strava\Client;
 use picasticks\Strava\REST;
 use Strava\API\OAuth;
 
-require_once '../lib/vendor/autoload.php';
+require_once '/Users/gabrieltavares/Documents/GitHub/StravaClubTracker_guild/vendor/autoload.php';
 
 // Define list of Strava Club IDs to track
 $clubs = array(
 	123456,
-	123456,
-	123456,
-	123456,
-	123456,
 );
 
 // Set a TZ for date calculations
-date_default_timezone_set('America/New_York');
+date_default_timezone_set('America/Sao_Paulo');
 
 // Set start and end date for tracking
-$startDate = '2021-01-01';
-$endDate   = '2021-01-03';
+$startDate = '2021-08-09';
+$endDate   = '2021-08-13';
 
 // Replace with your Strava API credentials and the URI of this script
 $oauth = new OAuth([
-	'clientId'     => 12345,
-	'clientSecret' => 'your-client-secret',
-	'redirectUri'  => 'https://your.example.org/example_update.php'
+	'clientId'     => 111111,
+	'clientSecret' => '212121212121',
+	'redirectUri'  => 'http://localhost:8888/example/htdocs/example_update.php',
 ]);
 
 if (!isset($_GET['code'])) {

@@ -173,6 +173,7 @@ class ClubTracker {
 		$totals = $this->getTotals($clubId, $person, $sport);
 		return $totals[$type];
 	}
+	
 
 	/**
 	 * Get total distance, total and moving time
@@ -279,7 +280,7 @@ class ClubTracker {
 		}
 		$html[] = '</tbody></table></div>';
 
-		return $this->applyTemplate(array('content' => implode("\n", $html)), 'activities');
+		return $this->applyTemplate('activities', array('content' => implode("\n", $html)));
 	}
 
 	/**
@@ -307,7 +308,7 @@ class ClubTracker {
 		}
 		$html[] = '</tbody></table></div>';
 
-		return $this->applyTemplate(array('content' => implode("\n", $html)), 'leaders');
+		return $this->applyTemplate('leaders', array('content' => implode("\n", $html)));
 	}
 
 	/**
@@ -336,7 +337,7 @@ class ClubTracker {
 			$this->formatSeconds($totals['moving_time']), number_format($totals['distance'], 1), number_format($totals['total'], 1));
 		$html[] = '</tbody></table>';
 
-		return $this->applyTemplate(array('content' => implode("\n", $html)), 'person');
+		return $this->applyTemplate('person', array('content' => implode("\n", $html)));
 	}
 
 	/**
@@ -353,7 +354,7 @@ class ClubTracker {
 		$html[] = sprintf(
 			'<h3 id="%d"><a href="https://www.strava.com/clubs/%s"><img alt="logo" src="%s"> %s</a></h3>',
 			$clubId, (empty($this->resultsData[$clubId]['url']) ? (string) $clubId : $this->resultsData[$clubId]['url']), $this->filterClubImage($club['profile'], $clubId), $club['name']);
-		$html[] = sprintf('<table class="club"><tbody><tr><th>Athlete</th><th>Event</th><th class="numeric">Hours</th><th class="numeric">%s</th><th class="numeric">Total</th><th>Top Effort</th><th class="numeric">Total (Adjusted)</th></tr>', key($this->distanceUnit));
+		$html[] = sprintf('<table class="club"><tbody><tr><th>Crafter</th><th>Atividade</th><th class="numeric">%s</th><th class="numeric">Horas</th><th class="total">KM Total</th><th class="total">Tempo total</th></tr>', key($this->distanceUnit));
 		foreach ($club['athletes'] as $name => $data) {
 			$rows = count($data['totals']);
 			$html[] = '<tr><th rowspan="'.($rows > 0 ? $rows : 1).'"><a href="'.$this->getPersonURL($clubId, $name).'">'.ucfirst($name).'</a></th>';
@@ -368,7 +369,7 @@ class ClubTracker {
 
 				$html[] = sprintf(
 					'<td>%s</td><td class="numeric">%s</td><td class="numeric">%s</td>',
-					$this->getLabel($sport), $this->formatHours($totals['moving_time']), number_format($totals['distance'], 1));
+					$this->getLabel($sport), number_format($totals['distance'], 1), $this->formatHours($totals['moving_time']));
 
 				if ($row == 1) {
 					$activities = $this->getTopActivities($clubId, $name);
@@ -379,10 +380,16 @@ class ClubTracker {
 					} else {
 						$top = '';
 					}
+					
+			
 
 					$html[] = sprintf(
+						/* With top effort
 						'<td class="numeric" rowspan="%d">%s</td><td rowspan="%d">%s</td><th class="numeric" rowspan="%d">%s</th>',
-						$rows, number_format($this->getTotal('distance', $clubId, $name), 1), $rows, $top, $rows, number_format($this->getTotal('total', $clubId, $name), 1));
+						$rows, number_format($this->getTotal('distance', $clubId, $name), 1), $rows, $top, $rows, $this->formatHours($this->getTotal('moving_time', $clubId, $name)));
+						*/
+						'<td class="total" rowspan="%d">%s</td><th class="total" rowspan="%d">%s</th>',
+						$rows, number_format($this->getTotal('distance', $clubId, $name), 1), $rows, $this->formatHours($this->getTotal('moving_time', $clubId, $name)));
 				}
 
 				$html[] = '</tr>';
@@ -391,11 +398,12 @@ class ClubTracker {
 		}
 		$totals = $this->getTotals($clubId);
 		$html[] = sprintf(
-			'<tr><th>Club Total</th><th></th><th class="numeric">%s</th><th></th><th class="numeric">%s</th><th></th><th class="numeric">%s</th></tr>',
-			$this->formatHours($totals['moving_time']), number_format($totals['distance'], 1), number_format($totals['total'], 1));
+			'<tr><th>Club Total</th><th></th><th></th><th></th><th class="numeric">%s</th><th class="numeric">%s</th></tr>',
+			number_format($totals['distance'], 1), $this->formatHours($totals['moving_time']) );
 		$html[] = '</tbody></table>';
 
-		return $this->applyTemplate(array('content' => implode("\n", $html)), 'club');
+
+		return $this->applyTemplate('club', array('content' => implode("\n", $html)));
 	}
 
 	/**
@@ -457,7 +465,8 @@ class ClubTracker {
 		foreach (array_keys($this->resultsData) as $clubId)
 			$clubs[] = $this->getClubHTML($clubId);
 
-		return $this->applyTemplate(array(
+		return $this->applyTemplate('index',
+			array(
 			'homeurl' => './',
 			'distance' => round($totaltotals['distance']),
 			'moving_time' => round($totaltotals['moving_time'] / 3600),
@@ -465,7 +474,7 @@ class ClubTracker {
 			'leaders' => implode("\n", $leaders),
 			'activities' => implode("\n", $activities),
 			'clubs' => implode("\n", $clubs),
-		), 'index');
+		));
 	}
 
 	/**
@@ -575,7 +584,7 @@ class ClubTracker {
 			// Need to set resultsData temporarily to avoid getTotal from doing endless recursion
 			$this->resultsData[$clubId]['athletes'] = $club;
 			foreach (array_keys($club) as $name) {
-				$totals[$name] = $this->getTotal('total', $clubId, $name);
+				$totals[$name] = $this->getTotal('moving_time', $clubId, $name);
 				// Sort totals by names of sports alphabetically so order of totals is consistent for every athlete
 				ksort($club[$name]['totals']);
 			}
@@ -624,7 +633,7 @@ class ClubTracker {
 	 *
 	 * @return string output
 	 */
-	protected function applyTemplate(array $vars = array(), string $template): string {
+	protected function applyTemplate(string $template, array $vars = array()): string {
 		// Set some default values for $vars
 		$vars = array_merge(array(
 			'homeurl' => '../',
@@ -632,6 +641,7 @@ class ClubTracker {
 			'currentDay' => (int) round(($this->end - $this->start)/86400) + 1,
 			'startDate' => date('F j', $this->start),
 			'currentDate' => date('F j', $this->end),
+			'endDate' => date('F j', $endDate->end),
 			'timestamp' => date('D, d M Y H:i T'),
 		), $vars);
 		return call_user_func($this->templateFunction, $vars, $template);
